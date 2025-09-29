@@ -1,108 +1,121 @@
-package edu.trincoll.service;
+ package edu.trincoll.functional;
 
-import edu.trincoll.functional.TaskPredicate;
 import edu.trincoll.model.Task;
 
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class TaskAnalyzer {
     private final List<Task> tasks;
 
     public TaskAnalyzer(List<Task> tasks) {
-        this.tasks = new ArrayList<>(tasks);
+        this.tasks = Objects.requireNonNullElseGet(tasks, List::of);
     }
 
-    // TODO: Implement using streams and filter
+    /* ========= Part 1: Stream Operations ========= */
+
+    // Filter using a Predicate<Task>
     public List<Task> filterTasks(Predicate<Task> predicate) {
-        // Implementation needed
-        return null;
+        return tasks.stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
     }
 
-    // TODO: Implement using Optional
-    public Optional<Task> findTaskById(Long id) {
-        // Implementation needed
-        return Optional.empty();
-    }
-
-    // TODO: Implement using streams, sorted, and limit
-    public List<Task> getTopPriorityTasks(int limit) {
-        // Implementation needed
-        return null;
-    }
-
-    // TODO: Implement using streams and groupingBy
-    public Map<Task.Status, List<Task>> groupByStatus() {
-        // Implementation needed
-        return null;
-    }
-
-    // TODO: Implement using streams and partitioningBy
-    public Map<Boolean, List<Task>> partitionByOverdue() {
-        // Implementation needed
-        return null;
-    }
-
-    // TODO: Implement using streams, map, and collect
-    public Set<String> getAllUniqueTags() {
-        // Implementation needed
-        return null;
-    }
-
-    // TODO: Implement using streams and reduce
-    public Optional<Integer> getTotalEstimatedHours() {
-        // Implementation needed
-        return Optional.empty();
-    }
-
-    // TODO: Implement using streams, map, and average
-    public OptionalDouble getAverageEstimatedHours() {
-        // Implementation needed
-        return OptionalDouble.empty();
-    }
-
-    // TODO: Implement using method references and map
+    // Map tasks to titles
     public List<String> getTaskTitles() {
-        // Implementation needed
-        return null;
+        return tasks.stream()
+                .map(Task::title)
+                .collect(Collectors.toList());
     }
 
-    // TODO: Implement using custom functional interface
-    public List<Task> filterWithCustomPredicate(TaskPredicate predicate) {
-        // Implementation needed
-        return null;
+    // Sort by priority and limit results
+    public List<Task> getTopPriorityTasks(int limit) {
+        return tasks.stream()
+                .sorted(Comparator.comparing((Task t) -> t.priority().getWeight())
+                        .reversed())
+                .limit(limit)
+                .collect(Collectors.toList());
     }
 
-    // TODO: Implement using streams and flatMap
-    public List<String> getAllTagsSorted() {
-        // Implementation needed
-        return null;
+    // Group by status
+    public Map<Task.Status, List<Task>> groupByStatus() {
+        return tasks.stream()
+                .collect(Collectors.groupingBy(Task::status));
     }
 
-    // TODO: Implement using streams and counting collector
+    // Partition by overdue
+    public Map<Boolean, List<Task>> partitionByOverdue() {
+        return tasks.stream()
+                .collect(Collectors.partitioningBy(Task::isOverdue));
+    }
+
+    // Count tasks by priority
     public Map<Task.Priority, Long> countTasksByPriority() {
-        // Implementation needed
-        return null;
+        return tasks.stream()
+                .collect(Collectors.groupingBy(Task::priority, Collectors.counting()));
     }
 
-    // TODO: Implement using Optional operations
-    public String getTaskSummary(Long taskId) {
-        // Implementation needed
-        return "Task not found";
+    // Total estimated hours
+    public int getTotalEstimatedHours() {
+        return tasks.stream()
+                .map(Task::estimatedHours)
+                .filter(Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .sum();
     }
 
-    // TODO: Implement using streams and anyMatch
+    // Average estimated hours
+    public double getAverageEstimatedHours() {
+        return tasks.stream()
+                .map(Task::estimatedHours)
+                .filter(Objects::nonNull)
+                .mapToInt(Integer::intValue)
+                .average()
+                .orElse(0.0);
+    }
+
+    // Collect all unique tags
+    public Set<String> getAllUniqueTags() {
+        return tasks.stream()
+                .filter(t -> t.tags() != null)
+                .flatMap(t -> t.tags().stream())
+                .collect(Collectors.toSet());
+    }
+
+    // Any overdue tasks?
     public boolean hasOverdueTasks() {
-        // Implementation needed
-        return false;
+        return tasks.stream().anyMatch(Task::isOverdue);
     }
 
-    // TODO: Implement using streams and allMatch
+    // All tasks assigned? (no assignedTo field in Task, so we treat tags/other as separate)
+    // Adjust if "assigned" is modeled differently later
     public boolean areAllTasksAssigned() {
-        // Implementation needed
-        return false;
+        // If assignment is tracked elsewhere, update here
+        return tasks.stream().noneMatch(t -> t.tags() == null || t.tags().isEmpty());
+    }
+
+    /* ========= Part 2: Optional Operations ========= */
+
+    // Find by ID
+    public Optional<Task> findTaskById(Long id) {
+        return tasks.stream()
+                .filter(t -> Objects.equals(t.id(), id))
+                .findFirst();
+    }
+
+    // Total hours with Optional (safe version)
+    public int getTotalEstimatedHoursOptional() {
+        return tasks.stream()
+                .map(t -> Optional.ofNullable(t.estimatedHours()).orElse(0))
+                .mapToInt(Integer::intValue)
+                .sum();
+    }
+
+    // Task summary (title - status) or "Task not found"
+    public String getTaskSummary(Long id) {
+        return findTaskById(id)
+                .map(task -> String.format("%s - %s", task.title(), task.status()))
+                .orElse("Task not found");
     }
 }

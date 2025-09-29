@@ -1,4 +1,4 @@
-package edu.trincoll.functional;
+ package edu.trincoll.functional;
 
 import edu.trincoll.model.Task;
 import java.util.function.Predicate;
@@ -6,17 +6,22 @@ import java.util.function.Predicate;
 @FunctionalInterface
 public interface TaskPredicate extends Predicate<Task> {
 
+    // Combine with AND
     default TaskPredicate and(TaskPredicate other) {
         return task -> this.test(task) && other.test(task);
     }
 
+    // Combine with OR
     default TaskPredicate or(TaskPredicate other) {
         return task -> this.test(task) || other.test(task);
     }
 
+    // Invert condition
     default TaskPredicate negate() {
         return task -> !this.test(task);
     }
+
+    /* ====== Static factory methods ====== */
 
     static TaskPredicate byStatus(Task.Status status) {
         return task -> task.status() == status;
@@ -38,3 +43,4 @@ public interface TaskPredicate extends Predicate<Task> {
         return Task::isActive;
     }
 }
+

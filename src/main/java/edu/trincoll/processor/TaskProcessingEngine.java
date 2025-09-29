@@ -1,83 +1,65 @@
-package edu.trincoll.processor;
+ package edu.trincoll.functional;
 
-import edu.trincoll.functional.TaskPredicate;
-import edu.trincoll.functional.TaskProcessor;
-import edu.trincoll.functional.TaskTransformer;
 import edu.trincoll.model.Task;
-
 import java.util.*;
 import java.util.function.*;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 public class TaskProcessingEngine {
 
-    // TODO: Implement pipeline processing using Function composition
-    public List<Task> processPipeline(
-            List<Task> tasks,
-            List<Function<List<Task>, List<Task>>> operations) {
-        // Implementation needed
-        return null;
+    // Apply a pipeline of processors
+    public List<Task> processPipeline(List<Task> tasks, List<TaskProcessor> processors) {
+        TaskProcessor pipeline = processors.stream()
+                .reduce(TaskProcessor::andThen)
+                .orElse(list -> list);
+        return pipeline.process(tasks);
     }
 
-    // TODO: Implement using Supplier for lazy evaluation
-    public Task getOrCreateDefault(Optional<Task> taskOpt, Supplier<Task> defaultSupplier) {
-        // Implementation needed
-        return null;
+    // Filter + Transform
+    public List<Task> filterAndTransform(List<Task> tasks,
+                                         TaskPredicate predicate,
+                                         TaskTransformer transformer) {
+        return tasks.stream()
+                .filter(predicate)
+                .map(transformer)
+                .collect(Collectors.toList());
     }
 
-    // TODO: Implement using Consumer for side effects
-    public void processTasksWithSideEffects(
-            List<Task> tasks,
-            Consumer<Task> sideEffect) {
-        // Implementation needed
+    // Transform all with a UnaryOperator
+    public List<Task> transformAll(List<Task> tasks, UnaryOperator<Task> operator) {
+        return tasks.stream()
+                .map(operator)
+                .collect(Collectors.toList());
     }
 
-    // TODO: Implement using BiFunction
-    public Task mergeTasks(Task task1, Task task2, BiFunction<Task, Task, Task> merger) {
-        // Implementation needed
-        return null;
+    // Apply consumer for side effects
+    public void processTasksWithSideEffects(List<Task> tasks, Consumer<Task> consumer) {
+        tasks.forEach(consumer);
     }
 
-    // TODO: Implement using UnaryOperator
-    public List<Task> transformAll(List<Task> tasks, UnaryOperator<Task> transformer) {
-        // Implementation needed
-        return null;
+    // Get or create default
+    public Task getOrCreateDefault(Optional<Task> optionalTask, Supplier<Task> supplier) {
+        return optionalTask.orElseGet(supplier);
     }
 
-    // TODO: Implement using custom functional interfaces
-    public List<Task> filterAndTransform(
-            List<Task> tasks,
-            TaskPredicate filter,
-            TaskTransformer transformer) {
-        // Implementation needed
-        return null;
+    // Generate infinite stream
+    public Stream<Task> generateTaskStream(Supplier<Task> supplier) {
+        return Stream.generate(supplier);
     }
 
-    // TODO: Implement batch processing with TaskProcessor
-    public void batchProcess(
-            List<Task> tasks,
-            int batchSize,
-            TaskProcessor processor) {
-        // Implementation needed
+    // Merge two tasks with BiFunction
+    public Task mergeTasks(Task t1, Task t2, BiFunction<Task, Task, Task> merger) {
+        return merger.apply(t1, t2);
     }
 
-    // TODO: Implement Optional chaining
-    public Optional<String> getHighestPriorityTaskTitle(List<Task> tasks) {
-        // Implementation needed
-        return Optional.empty();
-    }
-
-    // TODO: Implement stream generation using Stream.generate
-    public Stream<Task> generateTaskStream(Supplier<Task> taskSupplier) {
-        // Implementation needed
-        return Stream.empty();
-    }
-
-    // TODO: Implement using Comparator composition
-    public List<Task> sortByMultipleCriteria(
-            List<Task> tasks,
-            List<Comparator<Task>> comparators) {
-        // Implementation needed
-        return null;
+    // Sort with multiple criteria
+    public List<Task> sortByMultipleCriteria(List<Task> tasks,
+                                             Comparator<Task>... comparators) {
+        Comparator<Task> combined = Arrays.stream(comparators)
+                .reduce(Comparator::thenComparing)
+                .orElse((a, b) -> 0);
+        return tasks.stream()
+                .sorted(combined)
+                .collect(Collectors.toList());
     }
 }

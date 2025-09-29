@@ -32,6 +32,14 @@ public record Task(
         TODO, IN_PROGRESS, BLOCKED, DONE, CANCELLED
     }
 
+    public Task withStatus(Status newStatus) {
+        return new Task(id, title, description, priority, newStatus, tags, assignedTo);
+    }
+
+    public Task withAssignedTo(String user) {
+        return new Task(id, title, description, priority, status, tags, user);
+    }
+
     public boolean isOverdue() {
         return dueDate != null &&
                LocalDateTime.now().isAfter(dueDate) &&
