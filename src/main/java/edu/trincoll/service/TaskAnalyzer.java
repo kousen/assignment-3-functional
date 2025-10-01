@@ -24,9 +24,9 @@ public class TaskAnalyzer {
      * @return list of tasks matching the predicate
      */
     public List<Task> filterTasks(Predicate<Task> predicate) {
-        return tasks.stream()
-                .filter(predicate)
-                .collect(Collectors.toList());
+    return tasks.stream()
+        .filter(Objects.requireNonNull(predicate))
+        .collect(Collectors.toList());
     }
 
     /**
@@ -37,9 +37,10 @@ public class TaskAnalyzer {
      * @return Optional containing the task if found, empty otherwise
      */
     public Optional<Task> findTaskById(Long id) {
-        return tasks.stream()
-                .filter(task -> task.id().equals(id))
-                .findFirst();
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .filter(t -> Objects.equals(t.id(), id))
+        .findFirst();
     }
 
     /**
@@ -50,10 +51,11 @@ public class TaskAnalyzer {
      * @return list of top priority tasks
      */
     public List<Task> getTopPriorityTasks(int limit) {
-        return tasks.stream()
-                .sorted(Comparator.comparing((Task t) -> t.priority().getWeight()).reversed())
-                .limit(limit)
-                .collect(Collectors.toList());
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .sorted(Comparator.comparingInt((Task t) -> t.priority().getWeight()).reversed())
+        .limit(Math.max(0, limit))
+        .collect(Collectors.toList());
     }
 
     /**
@@ -63,8 +65,9 @@ public class TaskAnalyzer {
      * @return map of status to list of tasks
      */
     public Map<Task.Status, List<Task>> groupByStatus() {
-        return tasks.stream()
-                .collect(Collectors.groupingBy(Task::status));
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .collect(Collectors.groupingBy(Task::status));
     }
 
     /**
@@ -74,8 +77,9 @@ public class TaskAnalyzer {
      * @return map with true key for overdue tasks and false for others
      */
     public Map<Boolean, List<Task>> partitionByOverdue() {
-        return tasks.stream()
-                .collect(Collectors.partitioningBy(Task::isOverdue));
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .collect(Collectors.partitioningBy(Task::isOverdue));
     }
 
     /**
@@ -85,9 +89,10 @@ public class TaskAnalyzer {
      * @return set of all unique tags
      */
     public Set<String> getAllUniqueTags() {
-        return tasks.stream()
-                .flatMap(task -> task.tags().stream())
-                .collect(Collectors.toSet());
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .flatMap(t -> Optional.ofNullable(t.tags()).orElse(Set.of()).stream())
+        .collect(Collectors.toSet());
     }
 
     /**
@@ -97,10 +102,11 @@ public class TaskAnalyzer {
      * @return Optional containing total hours if any tasks have estimates
      */
     public Optional<Integer> getTotalEstimatedHours() {
-        return tasks.stream()
-                .map(Task::estimatedHours)
-                .filter(Objects::nonNull)
-                .reduce(Integer::sum);
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .map(Task::estimatedHours)
+        .filter(Objects::nonNull)
+        .reduce(Integer::sum);
     }
 
     /**
@@ -110,11 +116,12 @@ public class TaskAnalyzer {
      * @return OptionalDouble containing average hours
      */
     public OptionalDouble getAverageEstimatedHours() {
-        return tasks.stream()
-                .map(Task::estimatedHours)
-                .filter(Objects::nonNull)
-                .mapToInt(Integer::intValue)
-                .average();
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .map(Task::estimatedHours)
+        .filter(Objects::nonNull)
+        .mapToInt(Integer::intValue)
+        .average();
     }
 
     /**
@@ -124,9 +131,10 @@ public class TaskAnalyzer {
      * @return list of task titles
      */
     public List<String> getTaskTitles() {
-        return tasks.stream()
-                .map(Task::title)
-                .collect(Collectors.toList());
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .map(Task::title)
+        .collect(Collectors.toList());
     }
 
     /**
@@ -137,9 +145,9 @@ public class TaskAnalyzer {
      * @return list of tasks matching the custom predicate
      */
     public List<Task> filterWithCustomPredicate(TaskPredicate predicate) {
-        return tasks.stream()
-                .filter(predicate)
-                .collect(Collectors.toList());
+    return tasks.stream()
+        .filter(Objects.requireNonNull(predicate))
+        .collect(Collectors.toList());
     }
 
     /**
@@ -149,10 +157,11 @@ public class TaskAnalyzer {
      * @return sorted list of all tags (including duplicates)
      */
     public List<String> getAllTagsSorted() {
-        return tasks.stream()
-                .flatMap(task -> task.tags().stream())
-                .sorted()
-                .collect(Collectors.toList());
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .flatMap(t -> Optional.ofNullable(t.tags()).orElse(Set.of()).stream())
+        .sorted()
+        .collect(Collectors.toList());
     }
 
     /**
@@ -162,8 +171,9 @@ public class TaskAnalyzer {
      * @return map of priority to count of tasks
      */
     public Map<Task.Priority, Long> countTasksByPriority() {
-        return tasks.stream()
-                .collect(Collectors.groupingBy(Task::priority, Collectors.counting()));
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .collect(Collectors.groupingBy(Task::priority, Collectors.counting()));
     }
 
     /**
@@ -175,8 +185,8 @@ public class TaskAnalyzer {
      */
     public String getTaskSummary(Long taskId) {
         return findTaskById(taskId)
-                .map(task -> String.format("%s - %s (%s)", 
-                    task.title(), task.status(), task.priority()))
+                .map(t -> String.format("%s (id=%d) - %s", t.title(), t.id(),
+                        Optional.ofNullable(t.description()).orElse("No description")))
                 .orElse("Task not found");
     }
 
@@ -187,8 +197,9 @@ public class TaskAnalyzer {
      * @return true if any task is overdue, false otherwise
      */
     public boolean hasOverdueTasks() {
-        return tasks.stream()
-                .anyMatch(Task::isOverdue);
+    return tasks.stream()
+        .filter(Objects::nonNull)
+        .anyMatch(Task::isOverdue);
     }
 
     /**
@@ -199,6 +210,7 @@ public class TaskAnalyzer {
      */
     public boolean areAllTasksAssigned() {
         return tasks.stream()
-                .allMatch(task -> task.estimatedHours() != null);
+                .filter(Objects::nonNull)
+                .allMatch(t -> t.estimatedHours() != null);
     }
 }

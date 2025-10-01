@@ -15,33 +15,38 @@ public class TaskProcessingEngine {
     public List<Task> processPipeline(
             List<Task> tasks,
             List<Function<List<Task>, List<Task>>> operations) {
-        // Implementation needed
-        return null;
+    if (operations == null || operations.isEmpty()) return tasks;
+
+    Function<List<Task>, List<Task>> pipeline = operations.stream()
+        .filter(Objects::nonNull)
+        .reduce(Function.identity(), Function::andThen);
+
+    return pipeline.apply(tasks);
     }
 
     // TODO: Implement using Supplier for lazy evaluation
     public Task getOrCreateDefault(Optional<Task> taskOpt, Supplier<Task> defaultSupplier) {
-        // Implementation needed
-        return null;
+        return taskOpt.orElseGet(Objects.requireNonNull(defaultSupplier));
     }
 
     // TODO: Implement using Consumer for side effects
     public void processTasksWithSideEffects(
             List<Task> tasks,
             Consumer<Task> sideEffect) {
-        // Implementation needed
+        Objects.requireNonNull(sideEffect);
+        Optional.ofNullable(tasks).orElse(List.of()).forEach(sideEffect);
     }
 
     // TODO: Implement using BiFunction
     public Task mergeTasks(Task task1, Task task2, BiFunction<Task, Task, Task> merger) {
-        // Implementation needed
-        return null;
+        return Objects.requireNonNull(merger).apply(task1, task2);
     }
 
     // TODO: Implement using UnaryOperator
     public List<Task> transformAll(List<Task> tasks, UnaryOperator<Task> transformer) {
-        // Implementation needed
-        return null;
+        return Optional.ofNullable(tasks).orElse(List.of()).stream()
+                .map(Objects.requireNonNull(transformer))
+                .collect(Collectors.toList());
     }
 
     // TODO: Implement using custom functional interfaces
@@ -49,8 +54,10 @@ public class TaskProcessingEngine {
             List<Task> tasks,
             TaskPredicate filter,
             TaskTransformer transformer) {
-        // Implementation needed
-        return null;
+    return Optional.ofNullable(tasks).orElse(List.of()).stream()
+        .filter(Objects.requireNonNull(filter))
+        .map(Objects.requireNonNull(transformer))
+        .collect(Collectors.toList());
     }
 
     // TODO: Implement batch processing with TaskProcessor
@@ -58,26 +65,43 @@ public class TaskProcessingEngine {
             List<Task> tasks,
             int batchSize,
             TaskProcessor processor) {
-        // Implementation needed
+        Objects.requireNonNull(processor);
+    Objects.requireNonNull(tasks);
+    if (tasks.isEmpty() || batchSize <= 0) return;
+
+    int total = tasks.size();
+    int batches = (total + batchSize - 1) / batchSize;
+
+    java.util.stream.IntStream.range(0, batches)
+        .mapToObj(i -> tasks.subList(i * batchSize, Math.min((i + 1) * batchSize, total)))
+        .forEach(processor::process);
     }
 
     // TODO: Implement Optional chaining
     public Optional<String> getHighestPriorityTaskTitle(List<Task> tasks) {
-        // Implementation needed
-        return Optional.empty();
+        return Optional.ofNullable(tasks).orElse(List.of()).stream()
+                .filter(Objects::nonNull)
+                .max(Comparator.comparingInt(t -> t.priority().getWeight()))
+                .map(Task::title);
     }
 
     // TODO: Implement stream generation using Stream.generate
     public Stream<Task> generateTaskStream(Supplier<Task> taskSupplier) {
-        // Implementation needed
-        return Stream.empty();
+        return Stream.generate(Objects.requireNonNull(taskSupplier));
     }
 
     // TODO: Implement using Comparator composition
     public List<Task> sortByMultipleCriteria(
             List<Task> tasks,
             List<Comparator<Task>> comparators) {
-        // Implementation needed
-        return null;
+    if (tasks == null) return List.of();
+    Comparator<Task> combined = comparators.stream()
+        .filter(Objects::nonNull)
+        .reduce(Comparator::thenComparing)
+        .orElse((a, b) -> 0);
+
+    return tasks.stream()
+        .sorted(combined)
+        .collect(Collectors.toList());
     }
 }
