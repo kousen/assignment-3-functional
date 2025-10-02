@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 
 public class TaskProcessingEngine {
 
-    // TODO: Implement pipeline processing using Function composition
     public List<Task> processPipeline(
             List<Task> tasks,
             List<Function<List<Task>, List<Task>>> operations) {
@@ -25,12 +24,10 @@ public class TaskProcessingEngine {
     return pipeline.apply(tasks);
     }
 
-    // TODO: Implement using Supplier for lazy evaluation
     public Task getOrCreateDefault(Optional<Task> taskOpt, Supplier<Task> defaultSupplier) {
         return taskOpt.orElseGet(Objects.requireNonNull(defaultSupplier));
     }
 
-    // TODO: Implement using Consumer for side effects
     public void processTasksWithSideEffects(
             List<Task> tasks,
             Consumer<Task> sideEffect) {
@@ -38,19 +35,16 @@ public class TaskProcessingEngine {
         Optional.ofNullable(tasks).orElse(List.of()).forEach(sideEffect);
     }
 
-    // TODO: Implement using BiFunction
     public Task mergeTasks(Task task1, Task task2, BiFunction<Task, Task, Task> merger) {
         return Objects.requireNonNull(merger).apply(task1, task2);
     }
 
-    // TODO: Implement using UnaryOperator
     public List<Task> transformAll(List<Task> tasks, UnaryOperator<Task> transformer) {
         return Optional.ofNullable(tasks).orElse(List.of()).stream()
                 .map(Objects.requireNonNull(transformer))
                 .collect(Collectors.toList());
     }
 
-    // TODO: Implement using custom functional interfaces
     public List<Task> filterAndTransform(
             List<Task> tasks,
             TaskPredicate filter,
@@ -61,7 +55,6 @@ public class TaskProcessingEngine {
         .collect(Collectors.toList());
     }
 
-    // TODO: Implement batch processing with TaskProcessor
     public void batchProcess(
             List<Task> tasks,
             int batchSize,
@@ -78,7 +71,6 @@ public class TaskProcessingEngine {
         .forEach(processor::process);
     }
 
-    // TODO: Implement Optional chaining
     public Optional<String> getHighestPriorityTaskTitle(List<Task> tasks) {
         return Optional.ofNullable(tasks).orElse(List.of()).stream()
                 .filter(Objects::nonNull)
@@ -86,12 +78,10 @@ public class TaskProcessingEngine {
                 .map(Task::title);
     }
 
-    // TODO: Implement stream generation using Stream.generate
     public Stream<Task> generateTaskStream(Supplier<Task> taskSupplier) {
         return Stream.generate(Objects.requireNonNull(taskSupplier));
     }
 
-    // TODO: Implement using Comparator composition
     public List<Task> sortByMultipleCriteria(
             List<Task> tasks,
             List<Comparator<Task>> comparators) {
