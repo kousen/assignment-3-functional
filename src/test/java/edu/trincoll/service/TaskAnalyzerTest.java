@@ -51,7 +51,7 @@ class TaskAnalyzerTest {
 
             new Task(5L, "Fix bug #123", "Critical production bug",
                 Task.Priority.CRITICAL, Task.Status.IN_PROGRESS,
-                Set.of("bug", "production"),
+                Set.of("bug", "production", "critical"),
                 LocalDateTime.now().minusHours(2),
                 LocalDateTime.now().plusHours(4), 4),
 
@@ -236,10 +236,10 @@ class TaskAnalyzerTest {
             Set<String> tags = analyzer.getAllUniqueTags();
 
             assertThat(tags)
-                .hasSize(8)
+                .hasSize(9)
                 .contains("testing", "development", "review",
                          "deployment", "production", "documentation",
-                         "bug", "meeting");
+                         "bug", "meeting", "critical");
         }
 
         @Test
@@ -250,7 +250,7 @@ class TaskAnalyzerTest {
             assertThat(tags)
                 .hasSize(11) // Some tasks have multiple tags
                 .isSorted()
-                .contains("bug", "deployment", "development", "documentation");
+                .contains("bug", "critical", "deployment", "development", "documentation");
         }
     }
 

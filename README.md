@@ -268,4 +268,4 @@ Document your AI usage in a comment at the top of `TaskAnalyzer.java`:
 
 ---
 
-**Note:** This assignment emphasizes functional thinking. Embrace immutability, pure functions, and declarative style. The tests are comprehensive - let them guide your implementation!
+**Note:** This assignment emphasizes functional thinking. Embrace immutability, pure functions, and declarative style. The tests are comprehensive - let them guide your implementation!      *extra to test something
